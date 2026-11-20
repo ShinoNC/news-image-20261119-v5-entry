@@ -73,4 +73,13 @@ const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 mkdirSync(outDir, { recursive: true });
 const image = readFileSync(new URL("./entry.png", import.meta.url));
 checkPng(image);
-writeFileSync(join(outDir, "entry.png"), image);
+const outPath = join(outDir, "entry.png");
+writeFileSync(outPath, image);
+// Read the copy back: this program's whole job is a byte-for-byte
+// copy, so confirm the bytes on disk are the bytes we meant to write.
+const written = readFileSync(outPath);
+if (written.length !== image.length || !written.equals(image)) {
+  throw new Error(
+    `written entry.png is ${written.length} bytes and does not match the ${image.length}-byte source`,
+  );
+}
